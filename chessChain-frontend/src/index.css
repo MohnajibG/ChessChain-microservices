@@ -1,0 +1,44 @@
+@import "tailwindcss";
+@import "chessground/assets/chessground.base.css";
+
+.cg-piece.pawn.white {
+  background-image: url("/assets/pieces/3d/white-pawn.png");
+}
+.cg-piece.pawn.black {
+  background-image: url("/assets/pieces/3d/black-pawn.png");
+}
+
+.cg-piece.knight.white {
+  background-image: url("/assets/pieces/3d/white-knight.png");
+}
+.cg-piece.knight.black {
+  background-image: url("/assets/pieces/3d/black-knight.png");
+}
+
+.cg-piece.bishop.white {
+  background-image: url("/assets/pieces/3d/white-bishop.png");
+}
+.cg-piece.bishop.black {
+  background-image: url("/assets/pieces/3d/black-bishop.png");
+}
+
+.cg-piece.rook.white {
+  background-image: url("/assets/pieces/3d/white-rook.png");
+}
+.cg-piece.rook.black {
+  background-image: url("/assets/pieces/3d/black-rook.png");
+}
+
+.cg-piece.queen.white {
+  background-image: url("/assets/pieces/3d/white-queen.png");
+}
+.cg-piece.queen.black {
+  background-image: url("/assets/pieces/3d/black-queen.png");
+}
+
+.cg-piece.king.white {
+  background-image: url("/assets/pieces/3d/white-king.png");
+}
+.cg-piece.king.black {
+  background-image: url("/assets/pieces/3d/black-king.png");
+}

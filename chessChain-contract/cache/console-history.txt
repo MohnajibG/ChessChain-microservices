@@ -1,0 +1,19 @@
+await token.decimals(); // 6
+await token.symbol();   // "USDC"
+await token.name();     // "USD Coin"
+);
+  "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"
+  ["function name() view returns (string)", "function symbol() view returns (string)", "function decimals() view returns (uint8)"],
+const token = await ethers.getContractAt(
+const { ethers } = await network.connect();
+await ethers.provider.getBalance("0xe91daf025C0f47bA07BfDd8300E9CbA17b49136");
+// 3) Voir le solde de ton contrat déployé
+(await ethers.getSigners())[0].address;
+// 2) Voir ton signer
+const { ethers } = await network.connect();
+// 1) Récupérer ethers
+const { ethers } = await network.connect();
+const { ethers } = await network.connect();(await ethers.getSigners())[0].addressawait ethers.provider.getBalance("0xe91daf025C0f47bA07BfDd8300E9CbA17b49136")
+await ethers.provider.getBalance("0xe91daf025C0f47bA07BfDd8300E9CbA17b49136")
+(await ethers.getSigners())[0].address
+const { ethers } = await network.connect();

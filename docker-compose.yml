@@ -1,0 +1,35 @@
+version: "3.9"
+services:
+  contract:
+    build: ./chessChain-contract
+    container_name: chess_contract
+    volumes:
+      - ./chessChain-contract:/app
+    command: npx hardhat node
+    ports:
+      - "8545:8545"
+
+  backend:
+    build: ./chessChain-backend
+    container_name: chess_backend
+    depends_on:
+      - contract
+    environment:
+      - CONTRACT_URL=http://contract:8545
+      - PORT=4000
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./chessChain-backend:/app
+
+  frontend:
+    build: ./chessChain-frontend
+    container_name: chess_frontend
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=http://backend:4000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./chessChain-frontend:/app

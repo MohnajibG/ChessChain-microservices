@@ -1,0 +1,46 @@
+// {
+//   "compilerOptions": {
+//     "target": "ES2022",
+//     "module": "NodeNext",
+//     "moduleResolution": "NodeNext",
+//     "types": [
+//       "node",
+//       "hardhat",
+//       "@nomicfoundation/hardhat-ethers" // <<< important
+//       // si tu utilises la toolbox, tu peux aussi ajouter:
+//       // "@nomicfoundation/hardhat-toolbox-mocha-ethers"
+//     ],
+//     "esModuleInterop": true,
+//     "strict": true,
+//     "skipLibCheck": true,
+//     "resolveJsonModule": true,
+//     "outDir": "dist"
+//   },
+//   "include": [
+//     "hardhat.config.ts",
+//     "scripts",
+//     "test",
+//     "typechain-types",
+//     "hardhat.d.ts"
+//   ]
+// }
+
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "types": ["node", "hardhat"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "hardhat.config.ts",
+    "hardhat.d.ts",
+    "scripts",
+    "test",
+    "typechain-types",
+    "ignition/modules"
+  ]
+}
