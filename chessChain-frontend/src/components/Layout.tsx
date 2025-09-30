@@ -29,9 +29,9 @@ export default function Layout({ children }: LayoutProps) {
           <img
             className="w-10 h-10 rounded-full"
             src={logoCC}
-            alt="logoCheckChain"
+            alt="logoChessChain"
           />
-          Check<span className=" text-[#F78A28] ">Chain</span>
+          Chess<span className=" text-[#F78A28] ">Chain</span>
         </Link>
         <nav className="flex gap-6">
           {navItems.map((item) => (
@@ -58,7 +58,7 @@ export default function Layout({ children }: LayoutProps) {
 
       {/* Footer */}
       <footer className="bg-[#044352] text-gray-400 text-center py-4 text-sm">
-        © {new Date().getFullYear()} CheckChain – All rights reserved
+        © {new Date().getFullYear()} ChessChain – All rights reserved
       </footer>
     </div>
   );

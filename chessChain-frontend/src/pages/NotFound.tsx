@@ -19,7 +19,7 @@ export default function NotFound() {
       </Link>
 
       <footer className="absolute bottom-4 text-sm text-gray-400">
-        © {new Date().getFullYear()} CheckChain – All rights reserved
+        © {new Date().getFullYear()} ChessChain – All rights reserved
       </footer>
     </div>
   );

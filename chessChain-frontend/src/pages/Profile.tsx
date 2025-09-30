@@ -69,11 +69,6 @@ export default function Profile() {
           </div>
         )}
       </main>
-
-      {/* Footer */}
-      <footer className="text-center py-4 border-t border-[#2e4b80] text-sm text-gray-400">
-        © {new Date().getFullYear()} CheckChain – Built with ❤️ on Web3
-      </footer>
     </div>
   );
 }
