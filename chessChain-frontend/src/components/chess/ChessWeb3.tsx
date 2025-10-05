@@ -4,12 +4,11 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 import { io, type Socket } from "socket.io-client";
 import axios from "axios";
-import BoardUI from "./BoardUI";
-import initialPosition from "./initialPosition";
-import handleMatchFound from "../../lib/handleMatchFound";
 
-import { renderBoardFromFen } from "./helpers";
+import BoardUI from "./BoardUI";
+import handleMatchFound from "../../lib/handleMatchFound";
 import { type MoveEvent } from "./types";
+
 import Chip from "./atoms/Chip";
 import Card from "./atoms/Card";
 import Badge from "./atoms/Badge";
@@ -23,9 +22,6 @@ export default function ChessWeb3() {
   const userAddress = address ?? "";
 
   const [game, setGame] = useState(() => new Chess());
-  const [boardState, setBoardState] = useState<Record<string, string>>(
-    () => initialPosition
-  );
   const [highlightedSquares, setHighlightedSquares] = useState<Square[]>([]);
   const [roomId, setRoomId] = useState<string | null>(null);
   const [playerColor, setPlayerColor] = useState<"white" | "black">("white");
@@ -36,7 +32,7 @@ export default function ChessWeb3() {
   const [opponent, setOpponent] = useState<string | null>(null);
   const [joining, setJoining] = useState(false);
 
-  // stats locales (mock — à connecter backend plus tard)
+  // stats locales
   const [gamesPlayed, setGamesPlayed] = useState(0);
   const [wins, setWins] = useState(0);
   const [losses, setLosses] = useState(0);
@@ -54,7 +50,7 @@ export default function ChessWeb3() {
     return gamesPlayed > 0 ? Math.round((wins / gamesPlayed) * 100) : 0;
   }, [gamesPlayed, wins]);
 
-  /* socket listeners */
+  // --- SOCKET LISTENERS ---
   useEffect(() => {
     const s = io(SOCKET_URL, { autoConnect: false });
     socketRef.current = s;
@@ -67,28 +63,10 @@ export default function ChessWeb3() {
       const m = g.move({ from, to });
       if (!m) return;
       gameRef.current = g;
-      const fen = g.fen();
-      setGame(new Chess(fen));
-      setBoardState(renderBoardFromFen(fen));
+      setGame(new Chess(g.fen()));
       setHighlightedSquares([]);
     });
 
-    return () => {
-      s.disconnect();
-      socketRef.current = null;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!roomId || !socketRef.current) return;
-    const s = socketRef.current;
-    if (!s.connected) s.connect();
-    s.emit("joinGame", roomId);
-  }, [roomId]);
-
-  useEffect(() => {
-    const s = socketRef.current;
-    if (!s) return;
     s.on("matchFound", ({ creator, joiner }) => {
       const me = (userAddress ?? "").toLowerCase();
       if (creator.opponent?.toLowerCase() === me) {
@@ -105,10 +83,26 @@ export default function ChessWeb3() {
         });
       }
     });
+
+    s.on("gameOver", ({ winner, loser }: { winner: string; loser: string }) => {
+      setGamesPlayed((prev) => prev + 1);
+      if (winner.toLowerCase() === userAddress.toLowerCase())
+        setWins((prev) => prev + 1);
+      if (loser.toLowerCase() === userAddress.toLowerCase())
+        setLosses((prev) => prev + 1);
+    });
+
     return () => {
-      s.off("matchFound");
+      s.disconnect();
     };
   }, [userAddress]);
+
+  useEffect(() => {
+    if (!roomId || !socketRef.current) return;
+    const s = socketRef.current;
+    if (!s.connected) s.connect();
+    s.emit("joinGame", roomId);
+  }, [roomId]);
 
   useEffect(() => {
     if (roomId && playerRole && stake) {
@@ -116,39 +110,23 @@ export default function ChessWeb3() {
     }
   }, [roomId, playerRole, stake]);
 
+  // --- HANDLE MOVE ---
   const handleMove = (from: Square, to: Square) => {
     const g = gameRef.current;
     const turn = g.turn() === "w" ? "white" : "black";
     if (turn !== playerColor) return;
+
     const m = g.move({ from, to });
     if (!m) return;
+
     gameRef.current = g;
-    const fen = g.fen();
-    setGame(new Chess(fen));
-    setBoardState(renderBoardFromFen(fen));
+    setGame(new Chess(g.fen()));
     setHighlightedSquares([]);
+
     if (socketRef.current && roomId) {
       socketRef.current.emit("move", { from, to, roomId });
     }
   };
-  useEffect(() => {
-    const s = socketRef.current;
-    if (!s) return;
-
-    s.on("gameOver", ({ winner, loser }: { winner: string; loser: string }) => {
-      setGamesPlayed((prev) => prev + 1);
-
-      if (winner.toLowerCase() === userAddress.toLowerCase()) {
-        setWins((prev) => prev + 1);
-      } else if (loser.toLowerCase() === userAddress.toLowerCase()) {
-        setLosses((prev) => prev + 1);
-      }
-    });
-
-    return () => {
-      s.off("gameOver");
-    };
-  }, [userAddress]);
 
   const joinMatch = async () => {
     if (!stake || !isConnected || !userAddress || joining) return;
@@ -159,19 +137,14 @@ export default function ChessWeb3() {
         stake,
       });
       const { gameId } = res.data as { gameId: string };
-
       setRoomId(gameId);
 
       // reset local board
       const fresh = new Chess();
       gameRef.current = fresh;
-      const fen = fresh.fen();
-      setGame(new Chess(fen));
-      setBoardState(renderBoardFromFen(fen));
+      setGame(new Chess(fresh.fen()));
       setOpponent(null);
       setHighlightedSquares([]);
-
-      console.warn("⏳ Attente du rôle via socket avant commit on-chain…");
     } catch (err) {
       console.error("❌ Erreur joinMatch:", err);
     } finally {
@@ -180,42 +153,38 @@ export default function ChessWeb3() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gray-900 text-white flex flex-col">
-      {/* header */}
-      <header className="border-b border-white/10 bg-gray-900/70">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between">
-          <h1 className="font-bold">♟️ Web3 Chess</h1>
+    <div className="min-h-screen w-full bg-gradient-to-b from-gray-900 to-gray-800 text-white flex flex-col">
+      {/* HEADER */}
+      <header className="border-b border-white/10 backdrop-blur-md bg-gray-900/60">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+          <h1 className="font-extrabold text-2xl text-[#F78A28]">
+            ♟️ Web3 Chess
+          </h1>
           <ConnectButton />
         </div>
       </header>
 
-      {/* banner */}
+      {/* BANNER */}
       <div className="max-w-7xl mx-auto px-4 py-4">
-        {roomId ? (
-          <Card glow>
-            <div className="flex justify-between flex-wrap gap-2">
-              <Badge color={matchReady ? "green" : "yellow"}>
-                {matchReady ? "Match Ready" : "Waiting for opponent"}
-              </Badge>
-              <Badge color="blue">Stake: {stake ?? 0} USDC</Badge>
-              <Badge color="gray">Role: {playerRole ?? "—"}</Badge>
-              <Badge color={playerColor === "white" ? "blue" : "green"}>
-                You: {playerColor}
-              </Badge>
-            </div>
-          </Card>
-        ) : (
-          <Card glow>
-            <p>No room — select a stake to start matchmaking.</p>
-          </Card>
-        )}
+        <Card glow>
+          <div className="flex justify-between flex-wrap gap-2 items-center">
+            <Badge color={matchReady ? "green" : "yellow"}>
+              {matchReady ? "Match Ready" : "Waiting for opponent"}
+            </Badge>
+            <Badge color="blue">Stake: {stake ?? 0} USDC</Badge>
+            <Badge color="gray">Role: {playerRole ?? "—"}</Badge>
+            <Badge color={playerColor === "white" ? "blue" : "green"}>
+              You: {playerColor}
+            </Badge>
+          </div>
+        </Card>
       </div>
 
-      {/* main */}
+      {/* MAIN */}
       <main className="max-w-7xl mx-auto px-4 py-6 grid lg:grid-cols-12 gap-6 flex-1">
-        {/* matchmaking */}
+        {/* MATCHMAKING */}
         <section className="lg:col-span-3 space-y-4">
-          <Card title="💰 Stake selection">
+          <Card title="💰 Stake Selection" glow>
             <div className="flex gap-2 flex-wrap">
               {[10, 25, 50].map((amount) => (
                 <Chip
@@ -230,36 +199,35 @@ export default function ChessWeb3() {
             <button
               onClick={joinMatch}
               disabled={!stake || !isConnected || joining}
-              className="mt-4 px-4 py-2 bg-yellow-500 text-black rounded"
+              className="mt-4 px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black rounded-lg shadow hover:scale-105 transition-transform"
             >
-              {joining ? "Matching…" : "Start matchmaking"}
+              {joining ? "Matching…" : "Start Matchmaking"}
             </button>
           </Card>
         </section>
 
-        {/* board */}
+        {/* BOARD */}
         <section className="lg:col-span-6 space-y-4">
-          <Card title="♟️ Board">
+          <Card title="♟️ Board" glow>
             {roomId && opponent ? (
               <BoardUI
-                boardState={boardState}
+                board={game.board()}
                 highlightedSquares={highlightedSquares}
-                game={game}
                 handleDrop={handleMove}
                 setHighlightedSquares={setHighlightedSquares}
+                game={game}
               />
             ) : (
               <div className="grid grid-cols-3 gap-3">
-                <Skeleton className="h-24" />
-                <Skeleton className="h-24" />
-                <Skeleton className="h-24" />
+                <Skeleton className="h-24 w-full rounded-lg" />
+                <Skeleton className="h-24 w-full rounded-lg" />
+                <Skeleton className="h-24 w-full rounded-lg" />
               </div>
             )}
           </Card>
 
-          {/* historique des coups */}
-          <Card title="📜 Moves history">
-            <ol className="text-sm space-y-1 font-mono">
+          <Card title="📜 Moves History" glow>
+            <ol className="text-sm space-y-1 font-mono max-h-40 overflow-y-auto">
               {game.history().map((move, i) => (
                 <li key={i}>
                   {i + 1}. {move}
@@ -269,16 +237,16 @@ export default function ChessWeb3() {
           </Card>
         </section>
 
-        {/* dashboard */}
+        {/* DASHBOARD */}
         <section className="lg:col-span-3 space-y-4">
-          <Card title="📊 Dashboard">
-            <p>Your address: {userAddress || "—"}</p>
+          <Card title="📊 Dashboard" glow>
+            <p className="truncate">Your address: {userAddress || "—"}</p>
             <p>Role: {playerRole ?? "—"}</p>
-            <p>Stake: {stake ?? "—"}</p>
-            <p>Potential gain: {potentialGain ?? "—"}</p>
+            <p>Stake: {stake ?? "—"} USDC</p>
+            <p>Potential gain: {potentialGain ?? "—"} USDC</p>
           </Card>
 
-          <Card title="👤 Player Stats">
+          <Card title="👤 Player Stats" glow>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span>Games played</span>
@@ -299,7 +267,7 @@ export default function ChessWeb3() {
             </div>
           </Card>
 
-          <Card title="⏱ Game status">
+          <Card title="⏱ Game Status" glow>
             <p>Turn: {game.turn() === "w" ? "White" : "Black"}</p>
             <p>Last move: {game.history().slice(-1)[0] ?? "—"}</p>
             <p>Opponent: {opponent ?? "Waiting…"}</p>

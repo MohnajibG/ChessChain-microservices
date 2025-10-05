@@ -1,22 +1,25 @@
-// hardhat.config.ts
 import hardhatEthers from "@nomicfoundation/hardhat-ethers";
 import "dotenv/config";
 
 const { SEPOLIA_RPC_URL, PRIVATE_KEY } = process.env;
 
 export default {
-  solidity: "0.8.20",
+  solidity: {
+    version: "0.8.20",
+    settings: {
+      optimizer: { enabled: true, runs: 200 },
+      viaIR: true,
+    },
+  },
   plugins: [hardhatEthers],
   networks: {
-    // No need to define "hardhat" unless you customize it
     localhost: {
-      type: "http", // <= IMPORTANT
+      type: "http",
       url: "http://127.0.0.1:8545",
     },
     sepolia: {
-      type: "http", // <= IMPORTANT (était invalide)
+      type: "http",
       url: SEPOLIA_RPC_URL || "",
-      // Clé privée au format 0x... (une seule ou plusieurs)
       accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
     },
   },

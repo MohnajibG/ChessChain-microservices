@@ -1,8 +1,27 @@
 {
   "_format": "hh3-artifact-1",
   "contractName": "IERC20",
-  "sourceName": "contracts/CheckChain.sol",
+  "sourceName": "contracts/ChessChain.sol",
   "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "balanceOf",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
     {
       "inputs": [
         {
@@ -62,6 +81,6 @@
   "linkReferences": {},
   "deployedLinkReferences": {},
   "immutableReferences": {},
-  "inputSourceName": "project/contracts/CheckChain.sol",
-  "buildInfoId": "solc-0_8_20-e6bec787abb0e83bab6fb9ee50902c4e6c2e4e09"
+  "inputSourceName": "project/contracts/ChessChain.sol",
+  "buildInfoId": "solc-0_8_20-19dcee3404d8a1b35f261e8a246f4c743872b226"
 }

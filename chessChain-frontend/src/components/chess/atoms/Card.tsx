@@ -1,17 +1,19 @@
 import Skeleton from "./Skeleton";
 
+// Définition des props attendues pour le composant Card
 type CardProps = {
-  title?: string;
-  subtitle?: string;
-  right?: React.ReactNode;
-  children: React.ReactNode;
-  footer?: React.ReactNode;
-  glow?: boolean;
-  variant?: "default" | "success" | "danger" | "info";
-  isLoading?: boolean;
+  title?: string; // Titre de la carte
+  subtitle?: string; // Sous-titre de la carte
+  right?: React.ReactNode; // Élément affiché à droite dans l'en-tête
+  children: React.ReactNode; // Contenu principal de la carte
+  footer?: React.ReactNode; // Contenu du pied de carte
+  glow?: boolean; // Active un effet de halo autour de la carte
+  variant?: "default" | "success" | "danger" | "info"; // Variante de style de la carte
+  isLoading?: boolean; // Indique si la carte est en état de chargement
 };
 
-export default function Card({
+// Composant Card en tant que fonction fléchée
+const Card: React.FC<CardProps> = ({
   title,
   subtitle,
   right,
@@ -20,7 +22,8 @@ export default function Card({
   glow = false,
   variant = "default",
   isLoading = false,
-}: CardProps) {
+}) => {
+  // Styles CSS pour chaque variante
   const variantStyles: Record<string, string> = {
     default: "border-white/10",
     success: "border-green-500/30 ring-green-400/20",
@@ -31,12 +34,13 @@ export default function Card({
   return (
     <div
       className={[
-        "w-full rounded-2xl border",
-        "bg-white/[0.04] backdrop-blur-md shadow-lg transition hover:shadow-xl",
-        glow ? "ring-1" : "",
-        variantStyles[variant],
+        "w-full rounded-2xl border", // Forme et bordure
+        "bg-white/[0.04] backdrop-blur-md shadow-lg transition hover:shadow-xl", // Fond translucide, flou et ombre
+        glow ? "ring-1" : "", // Halo si glow=true
+        variantStyles[variant], // Style variant
       ].join(" ")}
     >
+      {/* En-tête de la carte (titre, sous-titre et élément droit) */}
       {(title || right) && (
         <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-white/10">
           <div>
@@ -46,9 +50,17 @@ export default function Card({
           {right}
         </div>
       )}
+
+      {/* Contenu principal de la carte */}
       <div className="p-4 sm:p-6">
-        {isLoading ? <Skeleton className="h-24 w-full" /> : children}
+        {isLoading ? (
+          <Skeleton className="h-24 w-full" /> // Affichage du Skeleton si en chargement
+        ) : (
+          children
+        )}
       </div>
+
+      {/* Pied de carte */}
       {footer && (
         <div className="px-4 sm:px-6 py-3 border-t border-white/10 text-xs text-gray-400">
           {footer}
@@ -56,4 +68,6 @@ export default function Card({
       )}
     </div>
   );
-}
+};
+
+export default Card;

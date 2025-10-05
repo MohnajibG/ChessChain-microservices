@@ -1,21 +1,20 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { type Square } from "chess.js";
+import { type Square, type Chess, type Piece } from "chess.js";
 
 interface BoardUIProps {
-  boardState: Record<string, string>;
+  board: (Piece | null)[][];
   highlightedSquares: Square[];
-  game: any;
   handleDrop: (from: Square, to: Square) => void;
-  setHighlightedSquares: (s: Square[]) => void;
+  setHighlightedSquares: (squares: Square[]) => void;
+  game: Chess;
 }
 
-export default function BoardUI({
-  boardState,
+const BoardUI: React.FC<BoardUIProps> = ({
+  board,
   highlightedSquares,
-  game,
   handleDrop,
   setHighlightedSquares,
-}: BoardUIProps) {
+  game,
+}) => {
   const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
   const ranks = [8, 7, 6, 5, 4, 3, 2, 1];
 
@@ -26,7 +25,7 @@ export default function BoardUI({
           {files.map((file, fIndex) => {
             const square = `${file}${rank}` as Square;
             const isDark = (rIndex + fIndex) % 2 === 1;
-            const piece = boardState[square]; // ← vient de initialPosition
+            const piece = board[8 - rank][fIndex]; // chess.js board: 0-index top-left
             const isHighlighted = highlightedSquares.includes(square);
 
             return (
@@ -43,24 +42,22 @@ export default function BoardUI({
                     : "bg-[url('/textures/wood-light.jpg')]"
                 } bg-cover`}
               >
-                {/* Cercle de highlight */}
                 {isHighlighted && (
                   <div className="absolute w-6 h-6 rounded-full bg-black/40 pointer-events-none"></div>
                 )}
 
-                {/* Pièce */}
                 {piece && (
                   <img
-                    src={`/pieces/3d/${piece}.png`}
-                    alt={piece}
+                    src={`/pieces/3d/${
+                      piece.color
+                    }${piece.type.toUpperCase()}.png`}
+                    alt={`${piece.color}${piece.type}`}
                     className="w-12 h-12 drop-shadow-lg select-none cursor-grab"
                     draggable
                     onDragStart={(e) => {
                       e.dataTransfer.setData("from", square);
                       const moves = game.moves({ square, verbose: true });
-                      setHighlightedSquares(
-                        moves.map((m: { to: string }) => m.to as Square)
-                      );
+                      setHighlightedSquares(moves.map((m) => m.to as Square));
                     }}
                     onDragEnd={() => setHighlightedSquares([])}
                   />
@@ -72,4 +69,6 @@ export default function BoardUI({
       ))}
     </div>
   );
-}
+};
+
+export default BoardUI;

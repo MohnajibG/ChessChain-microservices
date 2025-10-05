@@ -6,7 +6,7 @@ dotenv.config();
 
 // Charger l’artefact Hardhat
 const artifact = JSON.parse(
-  fs.readFileSync(new URL("../abi/CheckChain.json", import.meta.url), "utf-8")
+  fs.readFileSync(new URL("../abi/ChessChain.json", import.meta.url), "utf-8")
 );
 
 // Extraire seulement l'ABI
