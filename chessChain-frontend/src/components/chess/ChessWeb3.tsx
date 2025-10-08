@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Chess, type Square } from "chess.js";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
@@ -14,13 +15,31 @@ import Card from "./atoms/Card";
 import Badge from "./atoms/Badge";
 import Skeleton from "./atoms/Skeleton";
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL ?? "http://localhost:4000";
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000/queue";
+import { ethers, type BrowserProvider } from "ethers";
 
+// ------------------- CONSTANTES -------------------
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL ?? "http://localhost:3000";
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000/queue";
+
+const USDC_ADDRESS = import.meta.env.VITE_USDC_ADDRESS;
+const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS;
+
+// Minimal ERC20 ABI pour check balance / allowance / approve
+const ERC20_ABI = [
+  "function balanceOf(address) view returns (uint256)",
+  "function allowance(address owner, address spender) view returns (uint256)",
+  "function approve(address spender, uint256 amount) returns (bool)",
+  "function decimals() view returns (uint8)",
+];
+
+// ------------------- COMPONENT -------------------
 export default function ChessWeb3() {
+  // --- WALLET ---
   const { address, isConnected } = useAccount();
+  // const { data: _walletClient } = useWalletClient();
   const userAddress = address ?? "";
 
+  // --- ÉTATS DE JEU ---
   const [game, setGame] = useState(() => new Chess());
   const [highlightedSquares, setHighlightedSquares] = useState<Square[]>([]);
   const [roomId, setRoomId] = useState<string | null>(null);
@@ -32,14 +51,16 @@ export default function ChessWeb3() {
   const [opponent, setOpponent] = useState<string | null>(null);
   const [joining, setJoining] = useState(false);
 
-  // stats locales
+  // --- STATS JOUEUR ---
   const [gamesPlayed, setGamesPlayed] = useState(0);
   const [wins, setWins] = useState(0);
   const [losses, setLosses] = useState(0);
 
+  // --- REFS ---
   const socketRef = useRef<Socket | null>(null);
   const gameRef = useRef<Chess>(new Chess());
 
+  // --- CALCULS MEMO ---
   const potentialGain = useMemo(() => {
     return stake ? Math.round(stake * 2 * 0.95 * 1000) / 1000 : null;
   }, [stake]);
@@ -50,13 +71,65 @@ export default function ChessWeb3() {
     return gamesPlayed > 0 ? Math.round((wins / gamesPlayed) * 100) : 0;
   }, [gamesPlayed, wins]);
 
-  // --- SOCKET LISTENERS ---
+  // ------------------- FONCTION CHECK FUNDS & ALLOWANCE -------------------
+  const checkFundsAndAllowance = async (
+    userAddr: string,
+    stakeAmount: number,
+    tokenAddress = USDC_ADDRESS,
+    requireAllowanceFor = CONTRACT_ADDRESS,
+    signerOrProvider?: ethers.Signer | BrowserProvider
+  ): Promise<{
+    ok: boolean;
+    reason?: string;
+    approveNeeded?: boolean;
+    approveAmount?: string;
+  }> => {
+    try {
+      if (!tokenAddress)
+        return { ok: false, reason: "Token address not configured" };
+
+      const provider =
+        signerOrProvider ??
+        new ethers.BrowserProvider((window as any).ethereum);
+
+      const token = new ethers.Contract(tokenAddress, ERC20_ABI, provider);
+      const decimals = await token.decimals().catch(() => 6);
+      const stakeUnits = ethers.parseUnits(stakeAmount.toString(), decimals);
+
+      const balance: bigint = await token.balanceOf(userAddr);
+      if (balance < stakeUnits) {
+        return { ok: false, reason: "Insufficient token balance" };
+      }
+
+      const allowance: bigint = await token.allowance(
+        userAddr,
+        requireAllowanceFor
+      );
+      if (allowance < stakeUnits) {
+        return {
+          ok: true,
+          approveNeeded: true,
+          approveAmount: stakeUnits.toString(),
+        };
+      }
+
+      return { ok: true };
+    } catch (e) {
+      console.error("checkFunds error", e);
+      return { ok: false, reason: "Error checking token balance" };
+    }
+  };
+
+  // ------------------- SOCKETS -------------------
   useEffect(() => {
     const s = io(SOCKET_URL, { autoConnect: false });
     socketRef.current = s;
 
+    // Assignation couleur et rôle
     s.on("assignColor", (color: "white" | "black") => setPlayerColor(color));
     s.on("assignRole", (role: "creator" | "joiner") => setPlayerRole(role));
+
+    // Opponent events
     s.on("opponentJoined", (addr: string) => setOpponent(addr));
     s.on("opponentMove", ({ from, to }: MoveEvent) => {
       const g = gameRef.current;
@@ -67,8 +140,9 @@ export default function ChessWeb3() {
       setHighlightedSquares([]);
     });
 
+    // Match found
     s.on("matchFound", ({ creator, joiner }) => {
-      const me = (userAddress ?? "").toLowerCase();
+      const me = userAddress.toLowerCase();
       if (creator.opponent?.toLowerCase() === me) {
         handleMatchFound({
           gameId: joiner.gameId,
@@ -84,6 +158,7 @@ export default function ChessWeb3() {
       }
     });
 
+    // Game over
     s.on("gameOver", ({ winner, loser }: { winner: string; loser: string }) => {
       setGamesPlayed((prev) => prev + 1);
       if (winner.toLowerCase() === userAddress.toLowerCase())
@@ -97,20 +172,7 @@ export default function ChessWeb3() {
     };
   }, [userAddress]);
 
-  useEffect(() => {
-    if (!roomId || !socketRef.current) return;
-    const s = socketRef.current;
-    if (!s.connected) s.connect();
-    s.emit("joinGame", roomId);
-  }, [roomId]);
-
-  useEffect(() => {
-    if (roomId && playerRole && stake) {
-      handleMatchFound({ gameId: roomId, stake, role: playerRole });
-    }
-  }, [roomId, playerRole, stake]);
-
-  // --- HANDLE MOVE ---
+  // ------------------- GESTION DES MOVES -------------------
   const handleMove = (from: Square, to: Square) => {
     const g = gameRef.current;
     const turn = g.turn() === "w" ? "white" : "black";
@@ -123,15 +185,30 @@ export default function ChessWeb3() {
     setGame(new Chess(g.fen()));
     setHighlightedSquares([]);
 
-    if (socketRef.current && roomId) {
+    if (socketRef.current && roomId)
       socketRef.current.emit("move", { from, to, roomId });
-    }
   };
 
+  // ------------------- JOIN MATCH AVEC CHECK FUNDS -------------------
   const joinMatch = async () => {
     if (!stake || !isConnected || !userAddress || joining) return;
     setJoining(true);
     try {
+      // ✅ Vérifie solde et allowance avant de rejoindre
+      const fundCheck = await checkFundsAndAllowance(userAddress, stake);
+      if (!fundCheck.ok) {
+        alert(fundCheck.reason ?? "Error checking funds");
+        return;
+      }
+
+      if (fundCheck.approveNeeded) {
+        alert(
+          `Approval needed for ${stake} USDC. Please approve in your wallet first.`
+        );
+        return;
+      }
+
+      // Requête serveur pour rejoindre un match
       const res = await axios.post(`${API_URL}/join`, {
         address: userAddress,
         stake,
@@ -139,7 +216,6 @@ export default function ChessWeb3() {
       const { gameId } = res.data as { gameId: string };
       setRoomId(gameId);
 
-      // reset local board
       const fresh = new Chess();
       gameRef.current = fresh;
       setGame(new Chess(fresh.fen()));
@@ -152,6 +228,7 @@ export default function ChessWeb3() {
     }
   };
 
+  // ------------------- RENDER -------------------
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-gray-900 to-gray-800 text-white flex flex-col">
       {/* HEADER */}
