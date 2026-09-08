@@ -3,8 +3,8 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 export default function Dashboard() {
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-6 text-[#0BB4D9]">
-        Player Dashboard
+      <h2 className="text-xl font-semibold mb-6 tracking-tight">
+        Player <span className="text-gold-400">Dashboard</span>
       </h2>
 
       {/* Wallet Connection */}
@@ -12,25 +12,25 @@ export default function Dashboard() {
         <ConnectButton />
       </div>
 
-      <div className="space-y-4 text-sm">
-        <div className="p-3 rounded-lg bg-[#032c58]/50 border border-[#2e4b80]">
-          <p className="text-gray-400">Your Address</p>
+      <div className="space-y-3 text-sm">
+        <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10">
+          <p className="text-zinc-500">Your Address</p>
           <p className="font-mono">0x....</p>
         </div>
 
-        <div className="p-3 rounded-lg bg-[#032c58]/50 border border-[#2e4b80]">
-          <p className="text-gray-400">Opponent</p>
+        <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10">
+          <p className="text-zinc-500">Opponent</p>
           <p className="font-mono">Waiting...</p>
         </div>
 
-        <div className="p-3 rounded-lg bg-[#032c58]/50 border border-[#2e4b80]">
-          <p className="text-gray-400">Your Bet</p>
-          <p className="font-semibold text-[#0BB4D9]">0 NAU</p>
+        <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10">
+          <p className="text-zinc-500">Your Bet</p>
+          <p className="font-semibold text-gold-300">0 NAU</p>
         </div>
 
-        <div className="p-3 rounded-lg bg-[#032c58]/50 border border-[#2e4b80]">
-          <p className="text-gray-400">Reward if you win</p>
-          <p className="font-semibold text-[#28a745]">0 NAU</p>
+        <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10">
+          <p className="text-zinc-500">Reward if you win</p>
+          <p className="font-semibold text-emerald-400">0 NAU</p>
         </div>
       </div>
     </div>

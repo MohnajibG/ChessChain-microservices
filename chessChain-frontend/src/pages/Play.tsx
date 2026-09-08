@@ -11,14 +11,14 @@ interface PlayProps {
 export default function Play({ mode }: PlayProps) {
   if (!mode) {
     return (
-      <div className="text-center text-white mt-10">
-        ❌ No game mode selected. Go back to Home.
+      <div className="px-6 py-24 text-center text-zinc-400">
+        No game mode selected. Go back to Home.
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center justify-center mt-6">
+    <div className="mx-auto max-w-6xl px-6 py-10">
       {mode === "ai" && <ChessAI />}
       {mode === "web3" && <ChessWeb3 />}
       {mode === "free" && <ChessFree />}

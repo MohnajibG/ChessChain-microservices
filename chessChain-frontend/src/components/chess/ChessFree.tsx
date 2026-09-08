@@ -14,10 +14,15 @@ export default function ChessFree() {
   };
 
   return (
-    <div className="relative flex flex-col items-center gap-16">
-      <h2 className="text-[#F78A28] text-4xl font-bold">
-        Free Mode (2 Players)
-      </h2>
+    <div className="relative flex flex-col items-center gap-10 py-6">
+      <div className="text-center">
+        <h2 className="text-3xl font-bold tracking-tight">
+          Free <span className="text-gold-400">Play</span>
+        </h2>
+        <p className="mt-1 text-sm text-zinc-500">
+          Local two-player mode — no wallet needed.
+        </p>
+      </div>
       <BoardUI
         board={game.board()}
         highlightedSquares={highlightedSquares}

@@ -10,12 +10,12 @@ const Chip: React.FC<{
       onClick={onClick} // Gestion du clic
       disabled={disabled} // Désactivation du bouton
       className={[
-        "px-4 py-2 rounded-full text-sm transition", // Padding, forme et transition
-        "border border-white/10 backdrop-blur", // Bordure et effet flou
+        "px-4 py-2 rounded-full text-sm font-medium transition", // Padding, forme et transition
+        "border backdrop-blur", // Bordure et effet flou
         active
-          ? "bg-green-600 text-white shadow-md shadow-green-600/30" // Styles si actif
-          : "bg-blue-600/80 hover:bg-blue-700 text-white", // Styles si inactif
-        disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer", // Styles si désactivé
+          ? "border-gold-400/40 bg-gold-400/15 text-gold-200 shadow-sm shadow-gold-500/10" // Styles si actif
+          : "border-white/10 bg-white/[0.03] text-zinc-300 hover:border-white/20 hover:bg-white/[0.06]", // Styles si inactif
+        disabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer", // Styles si désactivé
       ].join(" ")}
     >
       {children}

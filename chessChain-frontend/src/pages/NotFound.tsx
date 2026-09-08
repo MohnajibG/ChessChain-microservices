@@ -2,25 +2,22 @@ import { Link } from "react-router-dom";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#044352] to-[#032c58] text-white font-outfit">
-      <h1 className="text-6xl font-bold text-[#0BB4D9] mb-4">404</h1>
-      <h2 className="text-2xl font-semibold text-[#0BB4D9] mb-6">
-        Page Not Found
-      </h2>
-      <p className="text-gray-300 mb-8 text-center max-w-md">
-        Oops! The page you are looking for doesn’t exist or has been moved.
+    <div className="flex flex-col items-center justify-center px-6 py-32 text-center">
+      <span className="text-sm font-semibold uppercase tracking-widest text-gold-300">
+        Error 404
+      </span>
+      <h1 className="mt-4 text-5xl font-extrabold tracking-tight md:text-6xl">
+        Off the board.
+      </h1>
+      <p className="mt-4 max-w-md text-zinc-400">
+        The page you're looking for doesn't exist or has been moved.
       </p>
-
       <Link
         to="/"
-        className="px-6 py-3 bg-[#F78A28] hover:bg-[#0BB4D9] rounded-lg font-semibold transition"
+        className="mt-10 rounded-full bg-gradient-to-r from-gold-400 to-gold-500 px-8 py-3 font-semibold text-zinc-950 shadow-lg shadow-gold-500/20 transition hover:scale-[1.03]"
       >
-        ⬅ Back to Home
+        Back to Home
       </Link>
-
-      <footer className="absolute bottom-4 text-sm text-gray-400">
-        © {new Date().getFullYear()} ChessChain – All rights reserved
-      </footer>
     </div>
   );
 }

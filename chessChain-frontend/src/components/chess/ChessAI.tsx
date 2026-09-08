@@ -41,24 +41,29 @@ const ChessAI: React.FC = () => {
   };
 
   return (
-    <div className="relative flex flex-col items-center gap-16">
-      <h2 className="text-[#F78A28] text-4xl font-bold">CHESS vs AI</h2>
+    <div className="relative flex flex-col items-center gap-10 py-6">
+      <div className="text-center">
+        <h2 className="text-3xl font-bold tracking-tight">
+          Chess vs <span className="text-gold-400">AI</span>
+        </h2>
+        <p className="mt-1 text-sm text-zinc-500">
+          Pick a difficulty and start playing.
+        </p>
+      </div>
 
-      <div className="flex gap-4 mb-4">
-        {["easy", "medium", "hard"].map((lvl) => (
-          <label
+      <div className="flex gap-2 rounded-full border border-white/10 bg-white/[0.03] p-1">
+        {(["easy", "medium", "hard"] as const).map((lvl) => (
+          <button
             key={lvl}
-            className="flex items-center gap-1 text-sm capitalize"
+            onClick={() => setDifficulty(lvl)}
+            className={`rounded-full px-4 py-1.5 text-sm font-medium capitalize transition ${
+              difficulty === lvl
+                ? "bg-gold-400/15 text-gold-200 ring-1 ring-gold-400/30"
+                : "text-zinc-400 hover:text-white"
+            }`}
           >
-            <input
-              type="radio"
-              value={lvl}
-              checked={difficulty === lvl}
-              onChange={() => setDifficulty(lvl as "easy" | "medium" | "hard")}
-              className="accent-[#F78A28]"
-            />
             {lvl}
-          </label>
+          </button>
         ))}
       </div>
 

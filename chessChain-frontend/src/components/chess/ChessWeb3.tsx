@@ -230,27 +230,30 @@ export default function ChessWeb3() {
 
   // ------------------- RENDER -------------------
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-gray-900 to-gray-800 text-white flex flex-col">
-      {/* HEADER */}
-      <header className="border-b border-white/10 backdrop-blur-md bg-gray-900/60">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-          <h1 className="font-extrabold text-2xl text-[#F78A28]">
-            ♟️ Web3 Chess
+    <div className="mx-auto max-w-7xl px-4 pb-16">
+      {/* TOOLBAR */}
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/5 py-6">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Web3 <span className="text-gold-400">Arena</span>
           </h1>
-          <ConnectButton />
+          <p className="text-sm text-zinc-500">
+            Stake tokens, play, take the pot.
+          </p>
         </div>
-      </header>
+        <ConnectButton />
+      </div>
 
       {/* BANNER */}
-      <div className="max-w-7xl mx-auto px-4 py-4">
+      <div className="py-4">
         <Card glow>
           <div className="flex justify-between flex-wrap gap-2 items-center">
-            <Badge color={matchReady ? "green" : "yellow"}>
+            <Badge color={matchReady ? "emerald" : "gold"}>
               {matchReady ? "Match Ready" : "Waiting for opponent"}
             </Badge>
-            <Badge color="blue">Stake: {stake ?? 0} USDC</Badge>
-            <Badge color="gray">Role: {playerRole ?? "—"}</Badge>
-            <Badge color={playerColor === "white" ? "blue" : "green"}>
+            <Badge color="sky">Stake: {stake ?? 0} USDC</Badge>
+            <Badge color="zinc">Role: {playerRole ?? "—"}</Badge>
+            <Badge color={playerColor === "white" ? "sky" : "zinc"}>
               You: {playerColor}
             </Badge>
           </div>
@@ -258,10 +261,10 @@ export default function ChessWeb3() {
       </div>
 
       {/* MAIN */}
-      <main className="max-w-7xl mx-auto px-4 py-6 grid lg:grid-cols-12 gap-6 flex-1">
+      <main className="grid lg:grid-cols-12 gap-6 py-2">
         {/* MATCHMAKING */}
         <section className="lg:col-span-3 space-y-4">
-          <Card title="💰 Stake Selection" glow>
+          <Card title="Stake Selection" glow>
             <div className="flex gap-2 flex-wrap">
               {[10, 25, 50].map((amount) => (
                 <Chip
@@ -276,7 +279,7 @@ export default function ChessWeb3() {
             <button
               onClick={joinMatch}
               disabled={!stake || !isConnected || joining}
-              className="mt-4 px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black rounded-lg shadow hover:scale-105 transition-transform"
+              className="mt-4 w-full px-4 py-2.5 bg-gradient-to-r from-gold-400 to-gold-500 text-zinc-950 font-semibold rounded-xl shadow-md shadow-gold-500/20 hover:shadow-gold-500/40 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
             >
               {joining ? "Matching…" : "Start Matchmaking"}
             </button>
@@ -285,15 +288,17 @@ export default function ChessWeb3() {
 
         {/* BOARD */}
         <section className="lg:col-span-6 space-y-4">
-          <Card title="♟️ Board" glow>
+          <Card title="Board" glow>
             {roomId && opponent ? (
-              <BoardUI
-                board={game.board()}
-                highlightedSquares={highlightedSquares}
-                handleDrop={handleMove}
-                setHighlightedSquares={setHighlightedSquares}
-                game={game}
-              />
+              <div className="flex justify-center">
+                <BoardUI
+                  board={game.board()}
+                  highlightedSquares={highlightedSquares}
+                  handleDrop={handleMove}
+                  setHighlightedSquares={setHighlightedSquares}
+                  game={game}
+                />
+              </div>
             ) : (
               <div className="grid grid-cols-3 gap-3">
                 <Skeleton className="h-24 w-full rounded-lg" />
@@ -303,8 +308,8 @@ export default function ChessWeb3() {
             )}
           </Card>
 
-          <Card title="📜 Moves History" glow>
-            <ol className="text-sm space-y-1 font-mono max-h-40 overflow-y-auto">
+          <Card title="Move History" glow>
+            <ol className="text-sm space-y-1 font-mono max-h-40 overflow-y-auto text-zinc-400">
               {game.history().map((move, i) => (
                 <li key={i}>
                   {i + 1}. {move}
@@ -316,38 +321,42 @@ export default function ChessWeb3() {
 
         {/* DASHBOARD */}
         <section className="lg:col-span-3 space-y-4">
-          <Card title="📊 Dashboard" glow>
-            <p className="truncate">Your address: {userAddress || "—"}</p>
-            <p>Role: {playerRole ?? "—"}</p>
-            <p>Stake: {stake ?? "—"} USDC</p>
-            <p>Potential gain: {potentialGain ?? "—"} USDC</p>
+          <Card title="Dashboard" glow>
+            <div className="space-y-2 text-sm text-zinc-300">
+              <p className="truncate">Address: {userAddress || "—"}</p>
+              <p>Role: {playerRole ?? "—"}</p>
+              <p>Stake: {stake ?? "—"} USDC</p>
+              <p>Potential gain: {potentialGain ?? "—"} USDC</p>
+            </div>
           </Card>
 
-          <Card title="👤 Player Stats" glow>
+          <Card title="Player Stats" glow>
             <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span>Games played</span>
+              <div className="flex justify-between items-center">
+                <span className="text-zinc-400">Games played</span>
                 <span className="font-medium">{gamesPlayed}</span>
               </div>
-              <div className="flex justify-between">
-                <span>Wins</span>
-                <Badge color="green">{wins}</Badge>
+              <div className="flex justify-between items-center">
+                <span className="text-zinc-400">Wins</span>
+                <Badge color="emerald">{wins}</Badge>
               </div>
-              <div className="flex justify-between">
-                <span>Losses</span>
-                <Badge color="red">{losses}</Badge>
+              <div className="flex justify-between items-center">
+                <span className="text-zinc-400">Losses</span>
+                <Badge color="rose">{losses}</Badge>
               </div>
-              <div className="flex justify-between">
-                <span>Winrate</span>
+              <div className="flex justify-between items-center">
+                <span className="text-zinc-400">Winrate</span>
                 <span className="font-medium">{winrate}%</span>
               </div>
             </div>
           </Card>
 
-          <Card title="⏱ Game Status" glow>
-            <p>Turn: {game.turn() === "w" ? "White" : "Black"}</p>
-            <p>Last move: {game.history().slice(-1)[0] ?? "—"}</p>
-            <p>Opponent: {opponent ?? "Waiting…"}</p>
+          <Card title="Game Status" glow>
+            <div className="space-y-1 text-sm text-zinc-300">
+              <p>Turn: {game.turn() === "w" ? "White" : "Black"}</p>
+              <p>Last move: {game.history().slice(-1)[0] ?? "—"}</p>
+              <p>Opponent: {opponent ?? "Waiting…"}</p>
+            </div>
           </Card>
         </section>
       </main>

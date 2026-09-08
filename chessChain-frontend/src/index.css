@@ -1,4 +1,15 @@
 @import "tailwindcss";
+
+@theme {
+  --font-outfit: "Outfit", ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  --color-gold-200: #f0e2b6;
+  --color-gold-300: #e3c67e;
+  --color-gold-400: #d4af52;
+  --color-gold-500: #c19a3a;
+  --color-gold-600: #9c7c2c;
+}
+
 @import "chessground/assets/chessground.base.css";
 
 .cg-piece.pawn.white {

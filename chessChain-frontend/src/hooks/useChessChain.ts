@@ -2,8 +2,9 @@ import { useState } from "react";
 import { ethers } from "ethers";
 import contractAbi from "../abi/CheckChain.json"; // ton ABI
 
-// ⚠️ Mets ici ton adresse de contrat déployé
-const CONTRACT_ADDRESS = "0x9086D78910bF21f0cA2508840F8D7fcefC3bf3C1";
+const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS as
+  | string
+  | undefined;
 const TOKEN_DECIMALS = 6; // USDC/USDT
 
 export default function useChessChain() {
@@ -15,6 +16,11 @@ export default function useChessChain() {
   // Connexion wallet
   const connectWallet = async () => {
     if (!window.ethereum) throw new Error("MetaMask non installé");
+    if (!CONTRACT_ADDRESS || !ethers.isAddress(CONTRACT_ADDRESS)) {
+      throw new Error(
+        `Env VITE_CONTRACT_ADDRESS manquante ou invalide. Reçu: ${CONTRACT_ADDRESS ?? "undefined"}`
+      );
+    }
 
     const _provider = new ethers.BrowserProvider(window.ethereum);
     await _provider.send("eth_requestAccounts", []);

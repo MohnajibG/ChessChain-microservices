@@ -26,16 +26,16 @@ const Card: React.FC<CardProps> = ({
   // Styles CSS pour chaque variante
   const variantStyles: Record<string, string> = {
     default: "border-white/10",
-    success: "border-green-500/30 ring-green-400/20",
-    danger: "border-red-500/30 ring-red-400/20",
-    info: "border-blue-500/30 ring-blue-400/20",
+    success: "border-emerald-400/30 ring-emerald-400/20",
+    danger: "border-rose-400/30 ring-rose-400/20",
+    info: "border-sky-400/30 ring-sky-400/20",
   };
 
   return (
     <div
       className={[
         "w-full rounded-2xl border", // Forme et bordure
-        "bg-white/[0.04] backdrop-blur-md shadow-lg transition hover:shadow-xl", // Fond translucide, flou et ombre
+        "bg-white/[0.03] backdrop-blur-xl shadow-lg shadow-black/20 transition hover:border-white/20", // Fond translucide, flou et ombre
         glow ? "ring-1" : "", // Halo si glow=true
         variantStyles[variant], // Style variant
       ].join(" ")}
@@ -44,8 +44,10 @@ const Card: React.FC<CardProps> = ({
       {(title || right) && (
         <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-white/10">
           <div>
-            {title && <h3 className="font-semibold">{title}</h3>}
-            {subtitle && <p className="text-xs text-gray-400">{subtitle}</p>}
+            {title && (
+              <h3 className="font-semibold tracking-tight">{title}</h3>
+            )}
+            {subtitle && <p className="text-xs text-zinc-500">{subtitle}</p>}
           </div>
           {right}
         </div>
@@ -62,7 +64,7 @@ const Card: React.FC<CardProps> = ({
 
       {/* Pied de carte */}
       {footer && (
-        <div className="px-4 sm:px-6 py-3 border-t border-white/10 text-xs text-gray-400">
+        <div className="px-4 sm:px-6 py-3 border-t border-white/10 text-xs text-zinc-500">
           {footer}
         </div>
       )}

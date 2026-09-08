@@ -2914,9 +2914,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"CheckChain@workspace:.":
+"ChessChain@workspace:.":
   version: 0.0.0-use.local
-  resolution: "CheckChain@workspace:."
+  resolution: "ChessChain@workspace:."
   dependencies:
     "@eslint/js": ^9.33.0
     "@headlessui/react": ^2.2.7
