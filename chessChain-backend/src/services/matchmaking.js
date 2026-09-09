@@ -11,6 +11,23 @@ const pipeline = [
   },
 ];
 
+export function buildMatchFoundPayload(game) {
+  return {
+    creator: {
+      gameId: game._id.toString(),
+      stake: game.stake,
+      opponent: game.player2,
+      role: "creator",
+    },
+    joiner: {
+      gameId: game._id.toString(),
+      stake: game.stake,
+      opponent: game.player1,
+      role: "joiner",
+    },
+  };
+}
+
 async function handleChange(io, change) {
   const gameId = change.documentKey._id;
   const game = await Game.findById(gameId).lean();
@@ -24,20 +41,7 @@ async function handleChange(io, change) {
     `🎯 Match: ${game.player1} vs ${game.player2} (stake: ${game.stake})`,
   );
 
-  io.to(game.roomId).emit("matchFound", {
-    creator: {
-      gameId: game._id.toString(),
-      stake: game.stake,
-      opponent: game.player2,
-      role: "creator",
-    },
-    joiner: {
-      gameId: game._id.toString(),
-      stake: game.stake,
-      opponent: game.player1,
-      role: "joiner",
-    },
-  });
+  io.to(game.roomId).emit("matchFound", buildMatchFoundPayload(game));
 }
 
 export function initMatchmaking(io) {

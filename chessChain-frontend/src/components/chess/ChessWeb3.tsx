@@ -59,6 +59,10 @@ export default function ChessWeb3() {
   // --- REFS ---
   const socketRef = useRef<Socket | null>(null);
   const gameRef = useRef<Chess>(new Chess());
+  // Le rattrapage de "joinGame" et le change stream Mongo peuvent tous deux
+  // émettre matchFound pour la même partie : on ne traite le match qu'une fois
+  // (handleMatchFound déclenche une transaction on-chain, jamais deux fois).
+  const handledMatchIdRef = useRef<string | null>(null);
 
   // --- CALCULS MEMO ---
   const potentialGain = useMemo(() => {
@@ -122,15 +126,9 @@ export default function ChessWeb3() {
 
   // ------------------- SOCKETS -------------------
   useEffect(() => {
-    const s = io(SOCKET_URL, { autoConnect: false });
+    const s = io(SOCKET_URL);
     socketRef.current = s;
 
-    // Assignation couleur et rôle
-    s.on("assignColor", (color: "white" | "black") => setPlayerColor(color));
-    s.on("assignRole", (role: "creator" | "joiner") => setPlayerRole(role));
-
-    // Opponent events
-    s.on("opponentJoined", (addr: string) => setOpponent(addr));
     s.on("opponentMove", ({ from, to }: MoveEvent) => {
       const g = gameRef.current;
       const m = g.move({ from, to });
@@ -140,16 +138,27 @@ export default function ChessWeb3() {
       setHighlightedSquares([]);
     });
 
-    // Match found
+    // Match found : source unique de vérité pour rôle / couleur / adversaire
     s.on("matchFound", ({ creator, joiner }) => {
+      if (handledMatchIdRef.current === creator.gameId) return; // doublon, déjà traité
+      handledMatchIdRef.current = creator.gameId;
+
       const me = userAddress.toLowerCase();
       if (creator.opponent?.toLowerCase() === me) {
+        // Je suis le joiner (player2)
+        setPlayerRole("joiner");
+        setPlayerColor("black");
+        setOpponent(joiner.opponent);
         handleMatchFound({
           gameId: joiner.gameId,
           stake: joiner.stake,
           role: "joiner",
         });
       } else if (joiner.opponent?.toLowerCase() === me) {
+        // Je suis le creator (player1)
+        setPlayerRole("creator");
+        setPlayerColor("white");
+        setOpponent(creator.opponent);
         handleMatchFound({
           gameId: creator.gameId,
           stake: creator.stake,
@@ -171,6 +180,15 @@ export default function ChessWeb3() {
       s.disconnect();
     };
   }, [userAddress]);
+
+  // Rejoint la room Socket.IO du match dès que le gameId est connu
+  // (nécessaire pour recevoir matchFound/opponentMove).
+  useEffect(() => {
+    const s = socketRef.current;
+    if (s && roomId) {
+      s.emit("joinGame", roomId);
+    }
+  }, [roomId]);
 
   // ------------------- GESTION DES MOVES -------------------
   const handleMove = (from: Square, to: Square) => {
@@ -215,6 +233,7 @@ export default function ChessWeb3() {
       });
       const { gameId } = res.data as { gameId: string };
       setRoomId(gameId);
+      handledMatchIdRef.current = null;
 
       const fresh = new Chess();
       gameRef.current = fresh;

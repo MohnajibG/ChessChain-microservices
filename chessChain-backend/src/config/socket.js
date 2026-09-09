@@ -1,4 +1,5 @@
-import { initMatchmaking } from "../services/matchmaking.js";
+import { buildMatchFoundPayload, initMatchmaking } from "../services/matchmaking.js";
+import Game from "../models/Game.js";
 
 const initSocket = (io) => {
   // Initialisation du matchmaking
@@ -7,18 +8,18 @@ const initSocket = (io) => {
   io.on("connection", (socket) => {
     console.log("🔗 Nouveau joueur:", socket.id);
 
-    socket.on("joinGame", (roomId) => {
+    socket.on("joinGame", async (roomId) => {
       socket.join(roomId);
-      const clients = io.sockets.adapter.rooms.get(roomId);
 
-      if (clients && clients.size === 1) {
-        // Premier joueur = creator
-        socket.emit("assignRole", "creator");
-      } else if (clients && clients.size === 2) {
-        // Deuxième joueur = joiner
-        socket.emit("assignRole", "joiner");
-        // Notifier les deux joueurs que la partie peut commencer
-        io.to(roomId).emit("gameStart", { roomId });
+      try {
+        const game = await Game.findById(roomId).lean();
+        if (game?.player2) {
+          // Rattrapage : le match était déjà formé avant que ce socket
+          // ne rejoigne la room (évite de rater l'événement matchFound).
+          socket.emit("matchFound", buildMatchFoundPayload(game));
+        }
+      } catch (err) {
+        console.error("[socket] joinGame lookup error:", err.message);
       }
     });
 
